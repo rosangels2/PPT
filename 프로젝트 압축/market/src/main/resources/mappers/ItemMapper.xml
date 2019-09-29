@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.green.market.dao.ItemDAO">	<!-- DAO 인터페이스가 있는 파일명 -->
+<insert id="insertItem">
+	insert into item(seller_id, category_no, title, price)
+		values(#{seller_id}, #{category_no}, #{title}, #{price})
+</insert>
+<select id="selectItemNo" resultType="int">
+	select max(no) from market.item
+</select>
+<insert id="insertOption">
+	insert into market.option(item_no, item_title, option.select, detail, stock, price)
+		values(#{oVo.item_no}, #{oVo.item_title}, #{oVo.select}, #{oVo.detail}, #{oVo.stock}, #{oVo.price})
+</insert>
+<insert id="insertFile">
+	insert into market.file(item_no,route)
+		 values(#{item_no}, #{file})
+</insert>
+<select id="selectFile" resultType="String">
+	select min(route) from market.file
+		where item_no = #{item_no}
+</select>
+<select id="selectItem" resultType="kr.green.market.vo.ItemVO">
+	select * from market.item
+		where item.no = #{no}
+</select>
+<update id="updateItem">
+	update market.item
+		set category_no = #{iVo.category_no}, title = #{iVo.title}, price = #{iVo.price}, information = #{iVo.information}, file = #{iVo.file}, commend = #{iVo.commend}, comment = #{iVo.comment}, valid = #{iVo.valid}
+		where no = #{iVo.no}
+</update>
+<select id="selectItemList" resultType="kr.green.market.vo.ItemVO">
+	select * from market.item
+		where valid = 'I'
+		<if test="cri.category != 0">and category_no = #{cri.category}</if>
+		<choose>
+			<when test="cri.type == 1">and title like concat('%', #{cri.search}, '%') order by no desc</when>
+			<when test="cri.type == 2">and title like concat('%', #{cri.search}, '%') order by commend desc</when>
+			<when test="cri.type == 3">and title like concat('%', #{cri.search}, '%') order by price asc</when>
+			<when test="cri.type == 4">and title like concat('%', #{cri.search}, '%') order by price desc</when>
+			<when test="cri.type == 5">and title like concat('%', #{cri.search}, '%') order by comment desc</when>
+			<otherwise>order by no desc</otherwise>
+		</choose>
+  		limit #{cri.pageStart}, #{cri.perPageNum}	<!-- Criteria 클래스의 getter를 통해 시작 게시글의 번지와 한 페이지에 표시할 게시글 수를 제한 -->
+</select>
+<select id="selectFiles" resultType="kr.green.market.vo.FileVO">
+	select * from market.file
+		where item_no = #{item_no}
+</select>
+<select id="selectSeller" resultType="kr.green.market.vo.SellerVO">
+	select * from seller
+		where id = #{id}
+</select>
+<select id="selectOptions" resultType="kr.green.market.vo.OptionVO">
+	select * from `option`
+		where item_no = #{item_no} and valid = 'I'
+</select>
+<select id="selectDetails" resultType="kr.green.market.vo.OptionVO">
+	select * from `option`
+		where item_no = #{item_no} and `select` = #{select}
+</select>
+<select id="selectOption" resultType="kr.green.market.vo.OptionVO">
+	select * from `option`
+		where no = #{no} and valid = 'I'
+</select>
+<select id="selectCouponList" resultType="kr.green.market.vo.CouponBagVO">
+	select * from couponBag
+		where id = #{id} and valid = 'I'
+</select>
+<select id="selectCoupon" resultType="kr.green.market.vo.CouponVO">
+	select * from coupon
+		where no = #{no} and valid = 'I'
+</select>
+<insert id="insertBuy">
+	insert into buy(id, item_no, seller_id , option_no, buy.select, detail, buy.count, price, request, image)
+		values(#{bVo.id}, #{bVo.item_no}, #{bVo.seller_id} , #{bVo.option_no}, #{bVo.select}, #{bVo.detail}, #{bVo.count}, #{bVo.price}, #{bVo.request}, #{bVo.image})
+</insert>
+<select id="selectMaxBuy" resultType="int">
+	select max(no) from buy
+</select>
+<select id="selectBuy" resultType="kr.green.market.vo.BuyVO">
+	select * from buy
+		where no = #{no} and valid = 'I'
+</select>
+<insert id="insertDelivery">
+	insert into delivery(buy_no, seller_name, contents, request, delivery.start, delivery.end)
+		values(#{dVo.buy_no}, #{dVo.seller_name}, #{dVo.contents}, #{dVo.request}, #{dVo.start}, #{dVo.end})
+</insert>
+<select id="selectMaxDelivery" resultType="int">
+	select max(no) from delivery
+</select>
+<select id="selectDelivery" resultType="kr.green.market.vo.DeliveryVO">
+	select * from delivery
+		where no = #{no} and valid = 'I'
+</select>
+<update id="updateBuy">
+	update buy
+		set request = #{bVo.request}, state = #{bVo.state}, valid = #{bVo.valid}, image = #{bVo.image}
+		where no = #{bVo.no}
+</update>
+<select id="selectBuyList" resultType="kr.green.market.vo.BuyVO">
+	select * from buy
+		where id = #{id} and valid = 'I'
+		order by no desc
+</select>
+<select id="selectWishlistAdd" resultType="kr.green.market.vo.WishlistVO">
+	select * from wishlist
+		where id = #{id} and item_no = #{item_no}
+</select>
+<insert id="insertWishlist">
+	insert into wishlist(id, item_no, image, item_name, item_price)
+		values(#{wVo.id}, #{wVo.item_no}, #{wVo.image}, #{wVo.item_name}, #{wVo.item_price})
+</insert>
+<select id="selectWishlistAll" resultType="kr.green.market.vo.WishlistVO">
+	select * from wishlist
+		where id = #{id} and valid = 'I'
+</select>
+<select id="selectWishlistDelete" resultType="kr.green.market.vo.WishlistVO">
+	select * from wishlist
+		where no = #{no}
+</select>
+<update id="updateWishlist">
+	update wishlist
+		set image = #{wVo.image}, item_name = #{wVo.item_name}, item_price = #{wVo.item_price}, valid = #{wVo.valid}
+		where no = #{wVo.no}
+</update>
+<insert id="insertBag">
+	insert into market.bag(id, item_no, option_no, `select`, detail, `count`, price, image)
+		values(#{bVo.id}, #{bVo.item_no}, #{bVo.option_no}, #{bVo.select}, #{bVo.detail}, #{bVo.count}, #{bVo.price}, #{bVo.image})
+</insert>
+<select id="selectBagList" resultType="kr.green.market.vo.BagVO">
+	select * from bag
+		where id = #{id} and valid = 'I'
+</select>
+<update id="modifyCouponBag">
+	update couponbag
+		set valid = #{cVo.valid}
+		where coupon_no = #{cVo.coupon_no} and id = #{cVo.id}
+</update>
+<select id="selectCouponBag" resultType="kr.green.market.vo.CouponBagVO">
+	select * from couponbag
+		where coupon_no = #{coupon_no} and id = #{id}	<!-- 받을 수 있는 쿠폰 목록 불러오기이므로 사용한 쿠폰이라도 다시 받을 수 없게 확인 -->
+</select>
+<select id="selectCouponBagList" resultType="kr.green.market.vo.CouponBagVO">
+	select * from couponbag
+		where id = #{id} and valid = 'I'
+</select>
+<select id="selectCouponAll" resultType="kr.green.market.vo.CouponVO">
+	select * from coupon
+		where valid = 'I'
+</select>
+<insert id="insertCouponBag">
+	insert into couponbag(id, coupon_no)
+		values(#{id}, #{coupon_no})
+</insert>
+<select id="selectMaxCouponBag" resultType="int">
+	select max(no) from couponbag
+</select>
+<select id="selectCouponBag1" resultType="kr.green.market.vo.CouponBagVO">
+	select * from couponbag
+		where no = #{no}
+</select>
+<select id="selectMyItemList" resultType="kr.green.market.vo.ItemVO">
+	select * from `item`
+		where seller_id = #{id} and valid = 'I'
+		order by no desc
+</select>
+<update id="deleteOption">
+	update `option`
+		set valid = 'D'
+		where no = #{no}
+</update>
+<update id="deleteFile">
+	update `file`
+		set valid = 'D'
+		where no = #{no}
+</update>
+<update id="updateBuyImage">
+	update buy
+		set image = #{image}
+		where item_no = #{item_no}
+</update>
+<update id="updateBagImage">
+	update bag
+		set image = #{image}
+		where item_no = #{item_no}
+</update>
+<update id="updateWishlistImage">
+	update wishlist
+		set image = #{image}
+		where item_no = #{item_no}
+</update>
+<update id="updateOption">
+	update `option`
+		set item_no = #{oVo.item_no}, item_title = #{oVo.item_title}, `select` = #{oVo.select}, `detail` = #{oVo.detail}, `stock` = #{oVo.stock}, `price` = #{oVo.price}, valid = #{oVo.valid}
+		where no = #{oVo.no}
+</update>
+<select id="getItemTotalCount" resultType="int">
+		select count(*) from `item` where valid = 'I'	<!-- 총 개시글 수를 계산하여 정수로 반환 -->
+		<if test="cri.category != 0">and category_no = #{cri.category}</if>
+		<choose>
+			<when test="cri.type == 1">and title like concat('%', #{cri.search}, '%') order by no desc</when>
+			<when test="cri.type == 2">and title like concat('%', #{cri.search}, '%') order by commend desc</when>
+			<when test="cri.type == 3">and title like concat('%', #{cri.search}, '%') order by price asc</when>
+			<when test="cri.type == 4">and title like concat('%', #{cri.search}, '%') order by price desc</when>
+			<when test="cri.type == 5">and title like concat('%', #{cri.search}, '%') order by comment desc</when>
+			<otherwise>order by no desc</otherwise>
+		</choose>
+</select>
+<select id="selectItemListAll" resultType="kr.green.market.vo.ItemVO">
+	select * from `item` 
+		where valid = 'I'
+		order by no desc
+		limit 0, 6
+</select>
+<select id="selectCategoryListAll" resultType="kr.green.market.vo.CategoryVO">
+	select * from `category`
+		where valid = 'I'
+</select>
+<select id="selectBag" resultType="kr.green.market.vo.BagVO">
+	select * from bag
+		where no = #{no} and valid = 'I'
+</select>
+<update id="updateBag">
+	update bag
+		set `count` = #{bVo.count}, price = #{bVo.price}, image = #{bVo.image}, valid = #{bVo.valid}
+		where no = #{bVo.no}
+</update>
+<select id="selectItemListSeller" resultType="kr.green.market.vo.ItemVO">
+	select * from `item`
+		where seller_id = #{id}
+</select>
+<select id="selectRequestListSeller" resultType="kr.green.market.vo.BuyVO">
+	select * from buy
+		where seller_id = #{id} and state like '%요청' and valid = 'I'
+		limit #{cri.pageStart}, #{cri.perPageNum}	<!-- Criteria 클래스의 getter를 통해 시작 게시글의 번지와 한 페이지에 표시할 게시글 수를 제한 -->
+</select>
+<select id="selectMoreItemList" resultType="kr.green.market.vo.ItemVO">
+	select * from `item`
+		where valid = 'I'
+		order by no desc
+		limit #{no}, 3
+</select>
+<select id="selectCommend" resultType="kr.green.market.vo.CommendVO">
+	select * from commend
+		where item_no = #{item_no} and id = #{id}
+</select>
+<insert id="insertCommend">
+	insert into commend(item_no, id)
+		values(#{item_no}, #{id})
+</insert>
+<update id="updateCommend">
+	update commend
+		set valid = #{cVo.valid}
+		where no = #{cVo.no}
+</update>
+</mapper>

@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.green.market.dao.AdminDAO">	<!-- DAO 인터페이스가 있는 파일명 -->
+<select id="selectAllMemberList" resultType="kr.green.market.vo.MemberVO">
+	select * from member 
+		where grade != 'admin'
+		<choose>
+			<when test="cri.type == 1">and id like concat('%', #{cri.search}, '%')</when>
+			<when test="cri.type == 2">and name like concat('%', #{cri.search}, '%')</when>
+			<when test="cri.type == 3">and email like concat('%', #{cri.search}, '%')</when>
+			<otherwise></otherwise>
+		</choose>
+		limit #{cri.pageStart}, #{cri.perPageNum}	<!-- Criteria 클래스의 getter를 통해 시작 게시글의 번지와 한 페이지에 표시할 게시글 수를 제한 -->
+</select>
+<select id="getTotalCountMemberList" resultType="int">
+	select count(*) from member 
+		where grade != 'admin'
+		<choose>
+			<when test="cri.type == 1">and id like concat('%', #{cri.search}, '%')</when>
+			<when test="cri.type == 2">and name like concat('%', #{cri.search}, '%')</when>
+			<when test="cri.type == 3">and email like concat('%', #{cri.search}, '%')</when>
+			<otherwise></otherwise>
+		</choose>
+</select>
+<select id="selectRequestSellerList" resultType="kr.green.market.vo.SellerVO">
+	select * from seller
+		where state = '승인대기'
+		<choose>
+			<when test="cri.type == 1">and id like concat('%', #{cri.search}, '%')</when>
+			<when test="cri.type == 2">and name like concat('%', #{cri.search}, '%')</when>
+			<when test="cri.type == 3">and email like concat('%', #{cri.search}, '%')</when>
+			<otherwise></otherwise>
+		</choose>
+		limit #{cri.pageStart}, #{cri.perPageNum}	<!-- Criteria 클래스의 getter를 통해 시작 게시글의 번지와 한 페이지에 표시할 게시글 수를 제한 -->
+</select>
+<select id="getTotalCountRequestSellerList" resultType="int">
+	select count(*) from seller
+		where state = '승인대기'
+		<choose>
+			<when test="cri.type == 1">and id like concat('%', #{cri.search}, '%')</when>
+			<when test="cri.type == 2">and name like concat('%', #{cri.search}, '%')</when>
+			<when test="cri.type == 3">and email like concat('%', #{cri.search}, '%')</when>
+			<otherwise></otherwise>
+		</choose>
+</select>
+<update id="updateAgreeSeller">
+	update seller
+		set state = #{sVo.state}, valid = #{sVo.valid}
+		where id = #{sVo.id}
+</update>
+<select id="selectCouponList" resultType="kr.green.market.vo.CouponVO">
+	select * from coupon
+		where valid = 'I'
+		order by no desc
+</select>
+<update id="updateCoupon">
+	update coupon
+		set title = #{cVo.title}, discount = #{cVo.discount}, period = #{cVo.period}, state = #{cVo.state}, valid = #{cVo.valid}
+		where no = #{cVo.no}
+</update>
+<insert id="insertCoupon">
+	insert into coupon(title, discount, period)
+		values(#{cVo.title}, #{cVo.discount}, #{cVo.period})
+</insert>
+<select id="selectMaxCouponNo" resultType="int">
+	select max(no) from coupon
+</select>
+<select id="selectCoupon" resultType="kr.green.market.vo.CouponVO">
+	select * from coupon
+		where no = #{no}
+</select>
+<insert id="insertBoard">
+	insert into board(`category`, `writer`, `title`, `contents`)
+		values(#{bVo.category}, #{bVo.writer}, #{bVo.title}, #{bVo.contents})
+</insert>
+<select id="selectBoardListAll" resultType="kr.green.market.vo.BoardVO">
+	select * from board
+		where category = '공지사항' and valid = 'I'
+		<choose>
+			<when test="cri.type == 1">and writer like concat('%', #{cri.search}, '%')</when>
+			<when test="cri.type == 2">and title like concat('%', #{cri.search}, '%')</when>	
+			<otherwise></otherwise>
+		</choose>
+		order by no desc
+		limit #{cri.pageStart}, #{cri.perPageNum}	<!-- Criteria 클래스의 getter를 통해 시작 게시글의 번지와 한 페이지에 표시할 게시글 수를 제한 -->
+</select>
+<select id="getTotalCountBoardList" resultType="int">
+	select count(*) from board
+		where category = '공지사항' and valid = 'I'
+		<choose>
+			<when test="cri.type == 1">and writer like concat('%', #{cri.search}, '%')</when>
+			<when test="cri.type == 2">and title like concat('%', #{cri.search}, '%')</when>		
+			<otherwise></otherwise>
+		</choose>
+</select>
+<update id="updateBoard">
+	update board
+		set category = #{bVo.category}, board_no = #{bVo.board_no}, title = #{bVo.title}, contents = #{bVo.contents}, state = #{bVo.state}, views = #{bVo.views}, valid = #{bVo.valid}
+		where no = #{bVo.no}
+</update>
+<select id="selectAskListAll" resultType="kr.green.market.vo.BoardVO">
+	select * from board
+		where category like '%문의' and valid = 'I'
+		<choose>
+			<when test="cri.type == 1">and writer like concat('%', #{cri.search}, '%')</when>
+			<when test="cri.type == 2">and contents like concat('%', #{cri.search}, '%')</when>
+			<when test="cri.type == 3">and title like concat('%', #{cri.search}, '%')</when>			
+			<otherwise></otherwise>
+		</choose>
+		order by no desc
+		limit #{cri.pageStart}, #{cri.perPageNum}	<!-- Criteria 클래스의 getter를 통해 시작 게시글의 번지와 한 페이지에 표시할 게시글 수를 제한 -->
+</select>
+<select id="getTotalCountAskList" resultType="int">
+	select count(*) from board
+		where category like '%문의' and valid = 'I'
+		<choose>
+			<when test="cri.type == 1">and writer like concat('%', #{cri.search}, '%')</when>
+			<when test="cri.type == 2">and contents like concat('%', #{cri.search}, '%')</when>	
+			<when test="cri.type == 3">and title like concat('%', #{cri.search}, '%')</when>			
+			<otherwise></otherwise>
+		</choose>
+</select>
+<select id="selectCommentListAll" resultType="kr.green.market.vo.CommentVO">
+	select * from `comment`
+		where category = '댓글' and valid = 'I'
+		<choose>
+			<when test="cri.type == 1">and writer like concat('%', #{cri.search}, '%')</when>
+			<when test="cri.type == 2">and contents like concat('%', #{cri.search}, '%')</when>			
+			<otherwise></otherwise>
+		</choose>
+		order by no desc
+		limit #{cri.pageStart}, #{cri.perPageNum}	<!-- Criteria 클래스의 getter를 통해 시작 게시글의 번지와 한 페이지에 표시할 게시글 수를 제한 -->
+</select>
+<select id="getTotalCountCommentList" resultType="int">
+	select count(*) from `comment`
+		where category = '댓글' and valid = 'I'
+		<choose>
+			<when test="cri.type == 1">and writer like concat('%', #{cri.search}, '%')</when>
+			<when test="cri.type == 2">and contents like concat('%', #{cri.search}, '%')</when>			
+			<otherwise></otherwise>
+		</choose>
+</select>
+<select id="selectReplyListAll" resultType="kr.green.market.vo.BoardVO">
+	select * from board
+		where category like '%답변' and valid = 'I'
+		<choose>
+			<when test="cri.type == 1">and writer like concat('%', #{cri.search}, '%')</when>
+			<when test="cri.type == 2">and contents like concat('%', #{cri.search}, '%')</when>	
+			<otherwise></otherwise>
+		</choose>
+		order by no desc
+		limit #{cri.pageStart}, #{cri.perPageNum}	<!-- Criteria 클래스의 getter를 통해 시작 게시글의 번지와 한 페이지에 표시할 게시글 수를 제한 -->
+</select>
+<select id="getTotalCountReplyList" resultType="int">
+	select count(*) from board
+		where category like '%답변' and valid = 'I'
+		<choose>
+			<when test="cri.type == 1">and writer like concat('%', #{cri.search}, '%')</when>
+			<when test="cri.type == 2">and contents like concat('%', #{cri.search}, '%')</when>		
+			<otherwise></otherwise>
+		</choose>
+</select>
+<update id="deleteComment">
+	update comment
+		set valid = "D"
+		where no = #{no}
+</update>
+<update id="deleteBoard">
+	update board
+		set valid = "D"
+		where no = #{no}
+</update>
+
+</mapper>
